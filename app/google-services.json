@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "127748342049",
+    "project_id": "appfinanza-14cbe",
+    "storage_bucket": "appfinanza-14cbe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:127748342049:android:86308b4d90e43818e2fe60",
+        "android_client_info": {
+          "package_name": "com.finanzasclaras.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCz-zY8DdpmEqIQhNLrjvd0LPwZpTvNTTc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

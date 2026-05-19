@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FinanzasClaras</string>
+    <string name="app_description">Tu control financiero personal</string>
+
+    <!-- Authentication -->
+    <string name="login_title">Iniciar sesión</string>
+    <string name="register_title">Crear cuenta</string>
+    <string name="email_label">Correo electrónico</string>
+    <string name="password_label">Contraseña</string>
+    <string name="confirm_password">Confirmar contraseña</string>
+    <string name="name_label">Nombre completo</string>
+    <string name="login_button">Iniciar sesión</string>
+    <string name="register_button">Crear cuenta</string>
+    <string name="continue_without_account">Continuar sin cuenta</string>
+    <string name="no_account">¿No tienes cuenta? Regístrate</string>
+    <string name="has_account">¿Ya tienes cuenta? Inicia sesión</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Inicio</string>
+    <string name="nav_transactions">Transacciones</string>
+    <string name="nav_savings">Ahorros</string>
+    <string name="nav_investments">Inversiones</string>
+    <string name="nav_analysis">Análisis</string>
+    <string name="nav_settings">Configuración</string>
+
+    <!-- Dashboard -->
+    <string name="balance_title">Balance del mes</string>
+    <string name="income_label">Ingresos</string>
+    <string name="expense_label">Gastos</string>
+    <string name="quick_actions">Acciones rápidas</string>
+    <string name="recent_transactions">Últimas transacciones</string>
+    <string name="view_all">Ver todo</string>
+    <string name="no_transactions">No hay transacciones aún</string>
+    <string name="add_transaction">Agregar transacción</string>
+
+    <!-- Transactions -->
+    <string name="all">Todas</string>
+    <string name="income">Ingresos</string>
+    <string name="expense">Gastos</string>
+    <string name="today">Hoy</string>
+    <string name="week">Semana</string>
+    <string name="month">Mes</string>
+    <string name="year">Año</string>
+    <string name="filter">Filtrar</string>
+    <string name="new_transaction">Nueva transacción</string>
+    <string name="edit_transaction">Editar transacción</string>
+    <string name="amount_hint">Monto</string>
+    <string name="category_hint">Categoría</string>
+    <string name="note_hint">Nota (opcional)</string>
+    <string name="save">Guardar</string>
+    <string name="update">Actualizar</string>
+    <string name="delete">Eliminar</string>
+
+    <!-- Savings -->
+    <string name="savings_title">Metas de ahorro</string>
+    <string name="new_goal">Nueva meta</string>
+    <string name="goal_name">Nombre</string>
+    <string name="target_amount">Monto objetivo</string>
+    <string name="contribute">Aportar</string>
+    <string name="goal_completed">Completada</string>
+    <string name="no_goals">No hay metas de ahorro</string>
+    <string name="create_first_goal">Crear primera meta</string>
+
+    <!-- Investments -->
+    <string name="investments_title">Inversiones</string>
+    <string name="new_investment">Nueva inversión</string>
+    <string name="portfolio_total">Portafolio total</string>
+    <string name="invested">Invertido</string>
+    <string name="current_value">Valor actual</string>
+    <string name="profit_loss">Ganancia/Pérdida</string>
+    <string name="no_investments">No hay inversiones</string>
+
+    <!-- Analysis -->
+    <string name="analysis_title">Análisis financiero</string>
+    <string name="net_balance">Balance neto</string>
+    <string name="monthly_comparison">Comparación mensual</string>
+    <string name="current_month">Mes actual</string>
+    <string name="previous_month">Mes anterior</string>
+    <string name="income_vs_expense">Ingresos vs Gastos</string>
+    <string name="suggestions">Sugerencias</string>
+    <string name="export_pdf">Exportar reporte a PDF</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configuración</string>
+    <string name="base_currency">Moneda base</string>
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="daily_reminder">Recordatorio diario</string>
+    <string name="weekly_reminder">Recordatorio semanal</string>
+    <string name="cloud_sync">Sincronización en nube</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="app_version">FinanzasClaras v1.0.0</string>
+
+    <!-- General -->
+    <string name="loading">Cargando…</string>
+    <string name="cancel">Cancelar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="error">Error</string>
+    <string name="success">Éxito</string>
+    <string name="retry">Reintentar</string>
+    <string name="saving">Guardando…</string>
+</resources>
