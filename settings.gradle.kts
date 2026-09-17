@@ -23,3 +23,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "FinanzasClaras"
 include(":app")
+include(":composeApp")
+
