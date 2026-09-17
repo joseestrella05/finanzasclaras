@@ -6,7 +6,11 @@ import org.koin.compose.KoinContext
 import platform.UIKit.UIViewController
 
 fun MainViewController(): UIViewController {
-    initKoin()
+    try {
+        initKoin()
+    } catch (_: Exception) {
+        // Koin ya iniciado
+    }
     return ComposeUIViewController {
         KoinContext {
             App()

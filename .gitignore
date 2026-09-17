@@ -11,3 +11,8 @@ captures
 *.aab
 *.hprof
 *.log
+
+# Xcode
+*.xcuserdata/
+DerivedData/
+
