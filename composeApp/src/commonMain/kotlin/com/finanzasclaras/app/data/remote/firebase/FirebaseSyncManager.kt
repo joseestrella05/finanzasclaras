@@ -1,9 +1,11 @@
 package com.finanzasclaras.app.data.remote.firebase
 
+import com.finanzasclaras.app.data.local.dao.CategoryBudgetDao
 import com.finanzasclaras.app.data.local.dao.InvestmentDao
 import com.finanzasclaras.app.data.local.dao.SavingContributionDao
 import com.finanzasclaras.app.data.local.dao.SavingGoalDao
 import com.finanzasclaras.app.data.local.dao.TransactionDao
+import com.finanzasclaras.app.data.local.entity.CategoryBudgetEntity
 import com.finanzasclaras.app.data.local.entity.InvestmentEntity
 import com.finanzasclaras.app.data.local.entity.SavingContributionEntity
 import com.finanzasclaras.app.data.local.entity.SavingGoalEntity
@@ -16,7 +18,8 @@ class FirebaseSyncManager(
     private val transactionDao: TransactionDao,
     private val savingGoalDao: SavingGoalDao,
     private val savingContributionDao: SavingContributionDao,
-    private val investmentDao: InvestmentDao
+    private val investmentDao: InvestmentDao,
+    private val categoryBudgetDao: CategoryBudgetDao
 ) {
     private val auth by lazy { Firebase.auth }
     private val firestore by lazy { Firebase.firestore }
@@ -36,6 +39,7 @@ class FirebaseSyncManager(
             syncSavingGoals(uid)
             syncSavingContributions(uid)
             syncInvestments(uid)
+            syncCategoryBudgets(uid)
             println("[Firebase Sync] Sync completed successfully for user: $uid")
             SyncResult.Success
         } catch (e: Throwable) {
@@ -134,6 +138,30 @@ class FirebaseSyncManager(
             }
             if (remoteInvestments.isNotEmpty()) {
                 investmentDao.insertAll(remoteInvestments)
+            }
+        } catch (_: Exception) {}
+    }
+
+    private suspend fun syncCategoryBudgets(uid: String) {
+        val unsynced = categoryBudgetDao.getUnsynced()
+        for (budget in unsynced) {
+            try {
+                firestore.collection("users").document(uid)
+                    .collection("category_budgets").document(budget.id)
+                    .set(budget, merge = true)
+                categoryBudgetDao.markSynced(budget.id)
+            } catch (_: Exception) {}
+        }
+
+        try {
+            val snapshot = firestore.collection("users").document(uid)
+                .collection("category_budgets")
+                .get()
+            val remoteBudgets = snapshot.documents.mapNotNull {
+                try { it.data<CategoryBudgetEntity>() } catch (_: Exception) { null }
+            }
+            if (remoteBudgets.isNotEmpty()) {
+                categoryBudgetDao.insertAll(remoteBudgets)
             }
         } catch (_: Exception) {}
     }

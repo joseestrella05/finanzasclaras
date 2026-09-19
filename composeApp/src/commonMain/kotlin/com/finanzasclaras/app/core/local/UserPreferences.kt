@@ -17,7 +17,8 @@ data class UserPreferencesData(
     val dailyReminderEnabled: Boolean = true,
     val weeklyReminderEnabled: Boolean = false,
     val syncEnabled: Boolean = true,
-    val lastSyncTimestamp: Long = 0L
+    val lastSyncTimestamp: Long = 0L,
+    val monthlyIncome: Double = 0.0
 )
 
 class UserPreferences(
@@ -34,6 +35,7 @@ class UserPreferences(
         const val WEEKLY_REMINDER_ENABLED = "weekly_reminder_enabled"
         const val SYNC_ENABLED = "sync_enabled"
         const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
+        const val MONTHLY_INCOME = "monthly_income"
     }
 
     private val _preferences = MutableStateFlow(readCurrentPreferences())
@@ -50,7 +52,8 @@ class UserPreferences(
             dailyReminderEnabled = settings.getBoolean(Keys.DAILY_REMINDER_ENABLED, true),
             weeklyReminderEnabled = settings.getBoolean(Keys.WEEKLY_REMINDER_ENABLED, false),
             syncEnabled = settings.getBoolean(Keys.SYNC_ENABLED, true),
-            lastSyncTimestamp = settings.getLong(Keys.LAST_SYNC_TIMESTAMP, 0L)
+            lastSyncTimestamp = settings.getLong(Keys.LAST_SYNC_TIMESTAMP, 0L),
+            monthlyIncome = settings.getDouble(Keys.MONTHLY_INCOME, 0.0)
         )
     }
 
@@ -106,6 +109,11 @@ class UserPreferences(
 
     suspend fun setLastSyncTimestamp(timestamp: Long) {
         settings[Keys.LAST_SYNC_TIMESTAMP] = timestamp
+        updateState()
+    }
+
+    suspend fun setMonthlyIncome(income: Double) {
+        settings[Keys.MONTHLY_INCOME] = income
         updateState()
     }
 }

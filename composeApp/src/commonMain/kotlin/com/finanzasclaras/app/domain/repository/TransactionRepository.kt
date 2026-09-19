@@ -1,5 +1,6 @@
 package com.finanzasclaras.app.domain.repository
 
+import com.finanzasclaras.app.data.local.dao.CategoryExpense
 import com.finanzasclaras.app.data.local.dao.MonthlySummary
 import com.finanzasclaras.app.domain.model.Transaction
 import com.finanzasclaras.app.domain.model.TransactionType
@@ -18,4 +19,5 @@ interface TransactionRepository {
     suspend fun getTotalIncome(startDate: Long, endDate: Long): Double
     suspend fun getTotalExpense(startDate: Long, endDate: Long): Double
     fun getMonthlySummary(startDate: Long, endDate: Long): Flow<List<MonthlySummary>>
+    fun getExpenseByCategory(startDate: Long, endDate: Long): Flow<List<CategoryExpense>>
 }

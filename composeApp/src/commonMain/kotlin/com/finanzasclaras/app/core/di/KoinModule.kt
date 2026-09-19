@@ -26,6 +26,9 @@ import com.finanzasclaras.app.presentation.settings.SettingsViewModel
 import com.finanzasclaras.app.presentation.splash.SplashViewModel
 import com.finanzasclaras.app.presentation.transactions.form.AddTransactionViewModel
 import com.finanzasclaras.app.presentation.transactions.list.TransactionsViewModel
+import com.finanzasclaras.app.domain.repository.BudgetRepository
+import com.finanzasclaras.app.data.repository.BudgetRepositoryImpl
+import com.finanzasclaras.app.presentation.budgets.BudgetsViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
@@ -46,13 +49,14 @@ val appModule = module {
 
     // Firebase Auth & Sync
     single<AuthRepository> { FirebaseAuthRepository() }
-    single { FirebaseSyncManager(get(), get(), get(), get()) }
+    single { FirebaseSyncManager(get(), get(), get(), get(), get()) }
 
     // Repositories
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
     single<TransactionRepository> { TransactionRepositoryImpl(get(), get()) }
     single<SavingGoalRepository> { SavingGoalRepositoryImpl(get(), get(), get()) }
     single<InvestmentRepository> { InvestmentRepositoryImpl(get(), get()) }
+    single<BudgetRepository> { BudgetRepositoryImpl(get(), get()) }
 
     // ViewModels
     viewModelOf(::SplashViewModel)
@@ -67,6 +71,7 @@ val appModule = module {
     viewModelOf(::CategoriesViewModel)
     viewModelOf(::AnalysisViewModel)
     viewModelOf(::SettingsViewModel)
+    viewModelOf(::BudgetsViewModel)
 }
 
 fun initKoin(appDeclaration: KoinAppDeclaration = {}) =

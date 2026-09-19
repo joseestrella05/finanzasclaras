@@ -15,6 +15,7 @@ object NavRoutes {
     const val INVESTMENTS = "investments"
     const val ADD_INVESTMENT = "add_investment"
     const val ANALYSIS = "analysis"
+    const val BUDGETS = "budgets"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
 

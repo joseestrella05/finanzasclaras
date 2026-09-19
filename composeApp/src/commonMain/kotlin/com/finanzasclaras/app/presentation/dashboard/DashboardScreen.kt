@@ -78,6 +78,8 @@ import com.finanzasclaras.app.domain.model.Category
 import com.finanzasclaras.app.domain.model.Transaction
 import org.koin.compose.viewmodel.koinViewModel
 
+import androidx.compose.material.icons.filled.PieChart
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -86,6 +88,7 @@ fun DashboardScreen(
     onNavigateToSavings: () -> Unit,
     onNavigateToInvestments: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
+    onNavigateToBudgets: () -> Unit,
     onNavigateToSettings: () -> Unit,
     viewModel: DashboardViewModel = koinViewModel()
 ) {
@@ -111,9 +114,6 @@ fun DashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::sync) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Sincronizar")
-                    }
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Configuración")
                     }
@@ -199,6 +199,7 @@ fun DashboardScreen(
                         QuickActionsSection(
                             onNavigateToTransactions = onNavigateToTransactions,
                             onNavigateToAnalysis = onNavigateToAnalysis,
+                            onNavigateToBudgets = onNavigateToBudgets,
                             onNavigateToSavings = onNavigateToSavings,
                             onNavigateToInvestments = onNavigateToInvestments
                         )
@@ -301,6 +302,7 @@ fun DashboardScreen(
                         QuickActionsSection(
                             onNavigateToTransactions = onNavigateToTransactions,
                             onNavigateToAnalysis = onNavigateToAnalysis,
+                            onNavigateToBudgets = onNavigateToBudgets,
                             onNavigateToSavings = onNavigateToSavings,
                             onNavigateToInvestments = onNavigateToInvestments
                         )
@@ -563,6 +565,7 @@ private fun QuickStatCard(
 private fun QuickActionsSection(
     onNavigateToTransactions: () -> Unit,
     onNavigateToAnalysis: () -> Unit,
+    onNavigateToBudgets: () -> Unit,
     onNavigateToSavings: () -> Unit,
     onNavigateToInvestments: () -> Unit
 ) {
@@ -577,13 +580,19 @@ private fun QuickActionsSection(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             QuickActionButton(
                 icon = Icons.Default.ReceiptLong,
                 label = "Historial",
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToTransactions
+            )
+            QuickActionButton(
+                icon = Icons.Default.PieChart,
+                label = "Presupuestos",
+                modifier = Modifier.weight(1f),
+                onClick = onNavigateToBudgets
             )
             QuickActionButton(
                 icon = Icons.Default.Analytics,

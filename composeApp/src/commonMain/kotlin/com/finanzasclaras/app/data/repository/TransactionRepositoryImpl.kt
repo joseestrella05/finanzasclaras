@@ -67,6 +67,9 @@ class TransactionRepositoryImpl(
     override fun getMonthlySummary(startDate: Long, endDate: Long): Flow<List<MonthlySummary>> =
         transactionDao.getMonthlySummary(startDate, endDate)
 
+    override fun getExpenseByCategory(startDate: Long, endDate: Long): Flow<List<com.finanzasclaras.app.data.local.dao.CategoryExpense>> =
+        transactionDao.getExpenseByCategory(startDate, endDate)
+
     private fun TransactionEntity.toDomain() = Transaction(
         id = id, categoryId = categoryId, amount = amount, currency = currency,
         amountInBase = amountInBase, type = TransactionType.fromString(type),

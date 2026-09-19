@@ -19,6 +19,7 @@ import com.finanzasclaras.app.presentation.splash.SplashScreen
 import com.finanzasclaras.app.presentation.transactions.form.AddTransactionScreen
 import com.finanzasclaras.app.presentation.transactions.list.TransactionsScreen
 import com.finanzasclaras.app.presentation.analysis.AnalysisScreen
+import com.finanzasclaras.app.presentation.budgets.BudgetsScreen
 import com.finanzasclaras.app.presentation.categories.CategoriesScreen
 import com.finanzasclaras.app.presentation.investments.InvestmentsScreen
 
@@ -71,6 +72,7 @@ fun NavGraph(
                 onNavigateToSavings = { navController.navigate(NavRoutes.SAVINGS) },
                 onNavigateToInvestments = { navController.navigate(NavRoutes.INVESTMENTS) },
                 onNavigateToAnalysis = { navController.navigate(NavRoutes.ANALYSIS) },
+                onNavigateToBudgets = { navController.navigate(NavRoutes.BUDGETS) },
                 onNavigateToSettings = { navController.navigate(NavRoutes.SETTINGS) }
             )
         }
@@ -114,6 +116,13 @@ fun NavGraph(
 
         composable(NavRoutes.ANALYSIS) {
             AnalysisScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToBudgets = { navController.navigate(NavRoutes.BUDGETS) }
+            )
+        }
+
+        composable(NavRoutes.BUDGETS) {
+            BudgetsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
