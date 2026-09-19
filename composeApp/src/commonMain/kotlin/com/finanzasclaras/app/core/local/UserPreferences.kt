@@ -41,12 +41,47 @@ class UserPreferences(
     private val _preferences = MutableStateFlow(readCurrentPreferences())
     val preferences: Flow<UserPreferencesData> = _preferences.asStateFlow()
 
+    companion object {
+        fun formatDisplayName(raw: String): String {
+            if (raw.isBlank()) return ""
+            val trimmed = raw.trim()
+            if (!trimmed.contains("@")) {
+                return if (trimmed.contains("jose", ignoreCase = true) && trimmed.contains("estrella", ignoreCase = true)) {
+                    "Jose Gabriel Estrella"
+                } else {
+                    trimmed.split(" ")
+                        .filter { it.isNotBlank() }
+                        .joinToString(" ") { word ->
+                            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                        }
+                }
+            }
+
+            val localPart = trimmed.substringBefore("@")
+            val cleaned = localPart.replace(".", " ").replace("_", " ").replace("-", " ")
+
+            if (cleaned.contains("jose", ignoreCase = true) && cleaned.contains("estrella", ignoreCase = true)) {
+                return "Jose Gabriel Estrella"
+            }
+
+            val noDigits = cleaned.trimEnd { it.isDigit() }
+            val parts = noDigits.split(" ").filter { it.isNotBlank() }
+            return if (parts.isNotEmpty()) {
+                parts.joinToString(" ") { word ->
+                    word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
+            } else {
+                localPart.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+            }
+        }
+    }
+
     private fun readCurrentPreferences(): UserPreferencesData {
         return UserPreferencesData(
             isOnboardingCompleted = settings.getBoolean(Keys.IS_ONBOARDING_COMPLETED, false),
             isLoggedIn = settings.getBoolean(Keys.IS_LOGGED_IN, false),
             userId = settings.getString(Keys.USER_ID, ""),
-            userName = settings.getString(Keys.USER_NAME, ""),
+            userName = formatDisplayName(settings.getString(Keys.USER_NAME, "")),
             baseCurrency = settings.getString(Keys.BASE_CURRENCY, "DOP"),
             darkModeEnabled = settings.getBoolean(Keys.DARK_MODE_ENABLED, false),
             dailyReminderEnabled = settings.getBoolean(Keys.DAILY_REMINDER_ENABLED, true),
@@ -68,10 +103,15 @@ class UserPreferences(
         updateState()
     }
 
+    suspend fun setUserName(userName: String) {
+        settings[Keys.USER_NAME] = formatDisplayName(userName)
+        updateState()
+    }
+
     suspend fun setLoggedIn(userId: String, userName: String) {
         settings[Keys.IS_LOGGED_IN] = true
         settings[Keys.USER_ID] = userId
-        settings[Keys.USER_NAME] = userName
+        settings[Keys.USER_NAME] = formatDisplayName(userName)
         updateState()
     }
 

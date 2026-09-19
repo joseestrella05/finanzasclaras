@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.finanzasclaras.app.core.common.Emerald50
@@ -590,7 +591,7 @@ private fun QuickActionsSection(
             )
             QuickActionButton(
                 icon = Icons.Default.PieChart,
-                label = "Presupuestos",
+                label = "Plan",
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToBudgets
             )
@@ -631,7 +632,7 @@ private fun QuickActionButton(
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 12.dp, horizontal = 6.dp),
+            modifier = Modifier.padding(vertical = 12.dp, horizontal = 2.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
@@ -643,9 +644,11 @@ private fun QuickActionButton(
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

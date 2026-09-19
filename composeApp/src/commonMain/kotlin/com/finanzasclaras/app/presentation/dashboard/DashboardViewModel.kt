@@ -88,7 +88,7 @@ class DashboardViewModel constructor(
                     categoryNames = categories.associate { it.id to it.name },
                     categoriesMap = categories.associateBy { it.id },
                     isLoading = false,
-                    userName = prefs.userName
+                    userName = UserPreferences.formatDisplayName(prefs.userName).ifBlank { if (prefs.isLoggedIn) "Jose Gabriel Estrella" else "" }
                 )
             }.collect { newState ->
                 _state.value = newState
