@@ -160,10 +160,32 @@ class FirebaseSyncManager(
             val remoteBudgets = snapshot.documents.mapNotNull {
                 try { it.data<CategoryBudgetEntity>() } catch (_: Exception) { null }
             }
+            val remoteIds = remoteBudgets.map { it.id }.toSet()
+
+            // Remove locally any budgets that were deleted remotely on another device
+            val localBudgets = categoryBudgetDao.getAllList()
+            for (local in localBudgets) {
+                if (local.synced && local.id !in remoteIds) {
+                    categoryBudgetDao.delete(local.id)
+                }
+            }
+
             if (remoteBudgets.isNotEmpty()) {
                 categoryBudgetDao.insertAll(remoteBudgets)
             }
         } catch (_: Exception) {}
+    }
+
+    suspend fun deleteCategoryBudgetRemote(id: String) {
+        val uid = userId ?: return
+        try {
+            firestore.collection("users").document(uid)
+                .collection("category_budgets").document(id)
+                .delete()
+            println("[Firebase Sync] Deleted remote category budget: $id")
+        } catch (e: Throwable) {
+            println("[Firebase Sync] Error deleting remote category budget $id: ${e.message}")
+        }
     }
 }
 

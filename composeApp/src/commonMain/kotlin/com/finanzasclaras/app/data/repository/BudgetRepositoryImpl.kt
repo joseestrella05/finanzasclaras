@@ -41,7 +41,21 @@ class BudgetRepositoryImpl(
     override suspend fun deleteBudget(id: String) {
         categoryBudgetDao.delete(id)
         scope.launch {
-            try { syncManager.syncAll() } catch (_: Throwable) {}
+            try {
+                syncManager.deleteCategoryBudgetRemote(id)
+            } catch (_: Throwable) {}
+        }
+    }
+
+    override suspend fun clearMonthBudgets(month: Int, year: Int) {
+        val current = categoryBudgetDao.getAllList().filter { it.month == month && it.year == year }
+        categoryBudgetDao.deleteMonth(month, year)
+        scope.launch {
+            for (b in current) {
+                try {
+                    syncManager.deleteCategoryBudgetRemote(b.id)
+                } catch (_: Throwable) {}
+            }
         }
     }
 

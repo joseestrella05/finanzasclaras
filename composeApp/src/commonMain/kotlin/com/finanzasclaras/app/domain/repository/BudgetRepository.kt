@@ -9,4 +9,5 @@ interface BudgetRepository {
     suspend fun saveBudget(budget: CategoryBudget)
     suspend fun saveBudgets(budgets: List<CategoryBudget>)
     suspend fun deleteBudget(id: String)
+    suspend fun clearMonthBudgets(month: Int, year: Int)
 }

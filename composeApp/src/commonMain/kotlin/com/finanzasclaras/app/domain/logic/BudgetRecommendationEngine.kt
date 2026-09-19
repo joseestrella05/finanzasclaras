@@ -29,7 +29,7 @@ data class FinancialPlanRecommendation(
 object BudgetRecommendationEngine {
 
     fun generatePlan(income: Double): FinancialPlanRecommendation {
-        val safeIncome = if (income > 0.0) income else 30000.0 // Default demo income if 0
+        val safeIncome = if (income > 0.0) income else 30000.0
 
         val needs = CurrencyUtils.round(safeIncome * 0.50)
         val wants = CurrencyUtils.round(safeIncome * 0.30)
@@ -41,63 +41,77 @@ object BudgetRecommendationEngine {
                 percentageOfIncome = 20.0,
                 recommendedAmount = CurrencyUtils.round(safeIncome * 0.20),
                 pillar = FinancialPillar.NEEDS,
-                advice = "Alquiler, hipoteca y mantenimiento no deberían superar el 20-25% de tu sueldo."
+                advice = "Alquiler, hipoteca y mantenimiento no deberían superar el 20% de tu sueldo."
             ),
             CategoryRecommendation(
-                categoryName = "Alimentación",
+                categoryName = "Supermercado",
                 percentageOfIncome = 15.0,
                 recommendedAmount = CurrencyUtils.round(safeIncome * 0.15),
                 pillar = FinancialPillar.NEEDS,
-                advice = "Supermercado y comida básica. Comprar con lista planificada ahorra hasta un 20%."
+                advice = "Supermercado y despensa básica familiar."
+            ),
+            CategoryRecommendation(
+                categoryName = "Restaurantes",
+                percentageOfIncome = 12.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.12),
+                pillar = FinancialPillar.WANTS,
+                advice = "Comidas fuera de casa, deliveries y restaurantes."
             ),
             CategoryRecommendation(
                 categoryName = "Transporte",
                 percentageOfIncome = 5.0,
                 recommendedAmount = CurrencyUtils.round(safeIncome * 0.05),
                 pillar = FinancialPillar.NEEDS,
-                advice = "Combustible, transporte público o mantenimiento."
+                advice = "Combustible, transporte público y pasajes."
             ),
             CategoryRecommendation(
                 categoryName = "Servicios",
                 percentageOfIncome = 5.0,
                 recommendedAmount = CurrencyUtils.round(safeIncome * 0.05),
                 pillar = FinancialPillar.NEEDS,
-                advice = "Luz, agua, internet y celular. Revisa suscripciones que no uses."
-            ),
-            CategoryRecommendation(
-                categoryName = "Salud",
-                percentageOfIncome = 5.0,
-                recommendedAmount = CurrencyUtils.round(safeIncome * 0.05),
-                pillar = FinancialPillar.NEEDS,
-                advice = "Seguro médico, consultas y medicinas."
+                advice = "Luz, agua, internet y teléfono."
             ),
             CategoryRecommendation(
                 categoryName = "Ocio",
-                percentageOfIncome = 10.0,
-                recommendedAmount = CurrencyUtils.round(safeIncome * 0.10),
+                percentageOfIncome = 8.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.08),
                 pillar = FinancialPillar.WANTS,
-                advice = "Salidas con amigos, cine, restaurantes y diversión."
+                advice = "Salidas, cine, paseos y diversión."
             ),
             CategoryRecommendation(
                 categoryName = "Ropa",
-                percentageOfIncome = 10.0,
-                recommendedAmount = CurrencyUtils.round(safeIncome * 0.10),
+                percentageOfIncome = 5.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.05),
                 pillar = FinancialPillar.WANTS,
-                advice = "Prendas y calzado. Evita compras impulsivas."
+                advice = "Ropa y calzado planificado."
             ),
             CategoryRecommendation(
-                categoryName = "Otros gastos",
-                percentageOfIncome = 10.0,
-                recommendedAmount = CurrencyUtils.round(safeIncome * 0.10),
+                categoryName = "Suscripciones",
+                percentageOfIncome = 5.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.05),
                 pillar = FinancialPillar.WANTS,
-                advice = "Margen para imprevistos menores o compras varias."
+                advice = "Streaming y membresías mensuales."
+            ),
+            CategoryRecommendation(
+                categoryName = "Salud",
+                percentageOfIncome = 3.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.03),
+                pillar = FinancialPillar.NEEDS,
+                advice = "Farmacia, medicamentos y consultas."
+            ),
+            CategoryRecommendation(
+                categoryName = "Educación",
+                percentageOfIncome = 2.0,
+                recommendedAmount = CurrencyUtils.round(safeIncome * 0.02),
+                pillar = FinancialPillar.NEEDS,
+                advice = "Cursos, libros y formación."
             )
         )
 
         val tips = mutableListOf(
-            "Regla 50/30/20: Separa el 20% (RD$ ${CurrencyUtils.format(savings, "DOP")}) tan pronto cobres antes de empezar a gastar.",
-            "Si tus gastos de vivienda y comida superan el 50%, reduce las compras de ocio temporalmente.",
-            "Mantén un fondo de emergencia equivalente a al menos 3 meses de tus gastos fijos (RD$ ${CurrencyUtils.format(needs * 3, "DOP")})."
+            "Regla 50/30/20: Separa el 20% (RD$ ${CurrencyUtils.format(savings, "DOP")}) tan pronto cobres antes de gastar.",
+            "Tus gastos presupuestados suman el 80% (RD$ ${CurrencyUtils.format(needs + wants, "DOP")}) para garantizar tu ahorro.",
+            "Mantén un fondo de emergencia de 3 meses de tus gastos fijos (RD$ ${CurrencyUtils.format(needs * 3, "DOP")})."
         )
 
         return FinancialPlanRecommendation(
@@ -110,18 +124,50 @@ object BudgetRecommendationEngine {
         )
     }
 
-    fun getSuggestedLimitForCategory(categoryName: String, monthlyIncome: Double): Double {
+    /**
+     * Genera presupuestos por categoría garantizando que la suma TOTAL
+     * nunca supere el 80% del sueldo disponible para gastos (dejando 20% para ahorro).
+     */
+    fun generateCategoryBudgets(
+        categories: List<Category>,
+        monthlyIncome: Double
+    ): Map<String, Double> {
         val safeIncome = if (monthlyIncome > 0.0) monthlyIncome else 30000.0
-        return when {
-            categoryName.contains("Vivienda", ignoreCase = true) -> safeIncome * 0.20
-            categoryName.contains("Alimentación", ignoreCase = true) || categoryName.contains("Comida", ignoreCase = true) -> safeIncome * 0.15
-            categoryName.contains("Transporte", ignoreCase = true) -> safeIncome * 0.05
-            categoryName.contains("Servicios", ignoreCase = true) -> safeIncome * 0.05
-            categoryName.contains("Salud", ignoreCase = true) -> safeIncome * 0.05
-            categoryName.contains("Educación", ignoreCase = true) -> safeIncome * 0.05
-            categoryName.contains("Ocio", ignoreCase = true) || categoryName.contains("Entretenimiento", ignoreCase = true) -> safeIncome * 0.10
-            categoryName.contains("Ropa", ignoreCase = true) -> safeIncome * 0.10
-            else -> safeIncome * 0.10
+        val maxExpenseBudget = safeIncome * 0.80 // 80% máximo de gastos
+        val result = mutableMapOf<String, Double>()
+
+        for (cat in categories) {
+            val name = cat.name.lowercase()
+            val percentage = when {
+                name.contains("vivienda") || name.contains("alquiler") -> 0.20
+                name.contains("supermercado") || name.contains("despensa") -> 0.15
+                name.contains("comida") || name.contains("restaurante") -> 0.12
+                name.contains("ocio") || name.contains("salidas") -> 0.08
+                name.contains("transporte") || name.contains("gasolina") -> 0.05
+                name.contains("servicios") || name.contains("luz") -> 0.05
+                name.contains("ropa") || name.contains("calzado") -> 0.05
+                name.contains("suscrip") || name.contains("streaming") -> 0.05
+                name.contains("salud") || name.contains("farmacia") -> 0.03
+                name.contains("educaci") -> 0.02
+                // Categorías de deuda o agropecuarias no se presupuestan automáticamente
+                else -> 0.0
+            }
+
+            if (percentage > 0.0) {
+                result[cat.id] = CurrencyUtils.round(safeIncome * percentage)
+            }
         }
+
+        // Si la suma supera el 80% de gastos por alguna razón, normalizar estrictamente
+        val totalAllocated = result.values.sum()
+        if (totalAllocated > maxExpenseBudget && totalAllocated > 0) {
+            val factor = maxExpenseBudget / totalAllocated
+            val keys = result.keys.toList()
+            for (k in keys) {
+                result[k] = CurrencyUtils.round(result[k]!! * factor)
+            }
+        }
+
+        return result
     }
 }

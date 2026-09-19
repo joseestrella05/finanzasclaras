@@ -257,21 +257,18 @@ class BudgetsViewModel(
             val month = _state.value.selectedMonth
             val year = _state.value.selectedYear
 
-            val newBudgets = mutableListOf<CategoryBudget>()
-            for (cat in categories) {
-                val limit = BudgetRecommendationEngine.getSuggestedLimitForCategory(cat.name, income)
-                if (limit > 0) {
-                    val existing = budgetRepository.getBudgetForCategory(cat.id, month, year)
-                    newBudgets.add(
-                        CategoryBudget(
-                            id = existing?.id ?: IdUtils.randomId(),
-                            categoryId = cat.id,
-                            monthlyLimit = CurrencyUtils.round(limit),
-                            month = month,
-                            year = year
-                        )
-                    )
-                }
+            // Clear old month budgets first so unwanted ones don't linger
+            budgetRepository.clearMonthBudgets(month, year)
+
+            val suggestedMap = BudgetRecommendationEngine.generateCategoryBudgets(categories, income)
+            val newBudgets = suggestedMap.map { (catId, limit) ->
+                CategoryBudget(
+                    id = IdUtils.randomId(),
+                    categoryId = catId,
+                    monthlyLimit = limit,
+                    month = month,
+                    year = year
+                )
             }
 
             if (newBudgets.isNotEmpty()) {

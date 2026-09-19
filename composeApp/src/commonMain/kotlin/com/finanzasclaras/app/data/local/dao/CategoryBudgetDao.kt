@@ -30,6 +30,12 @@ interface CategoryBudgetDao {
     @Query("UPDATE category_budgets SET synced = 1 WHERE id = :id")
     suspend fun markSynced(id: String)
 
+    @Query("SELECT * FROM category_budgets")
+    suspend fun getAllList(): List<CategoryBudgetEntity>
+
+    @Query("DELETE FROM category_budgets WHERE month = :month AND year = :year")
+    suspend fun deleteMonth(month: Int, year: Int)
+
     @Query("DELETE FROM category_budgets WHERE id = :id")
     suspend fun delete(id: String)
 }
