@@ -40,6 +40,15 @@ class BudgetsViewModel(
 
     init {
         loadData()
+        syncBudgets()
+    }
+
+    fun syncBudgets() {
+        viewModelScope.launch {
+            try {
+                syncManager.syncAll()
+            } catch (_: Throwable) {}
+        }
     }
 
     fun onMonthChanged(delta: Int) {
@@ -57,6 +66,7 @@ class BudgetsViewModel(
             selectedYear = newYear
         )
         loadData()
+        syncBudgets()
     }
 
     fun loadData() {
@@ -211,12 +221,14 @@ class BudgetsViewModel(
         viewModelScope.launch {
             budgetRepository.saveBudget(budget)
             closeDialog()
+            try { syncManager.syncAll() } catch (_: Throwable) {}
         }
     }
 
     fun deleteBudget(id: String) {
         viewModelScope.launch {
             budgetRepository.deleteBudget(id)
+            try { syncManager.syncAll() } catch (_: Throwable) {}
         }
     }
 
@@ -242,6 +254,7 @@ class BudgetsViewModel(
         viewModelScope.launch {
             userPreferences.setMonthlyIncome(income)
             closeIncomeDialog()
+            try { syncManager.syncAll() } catch (_: Throwable) {}
         }
     }
 
@@ -274,6 +287,7 @@ class BudgetsViewModel(
             if (newBudgets.isNotEmpty()) {
                 budgetRepository.saveBudgets(newBudgets)
             }
+            try { syncManager.syncAll() } catch (_: Throwable) {}
         }
     }
 }

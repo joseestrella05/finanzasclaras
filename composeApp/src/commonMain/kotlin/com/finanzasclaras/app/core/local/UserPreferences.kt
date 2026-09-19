@@ -18,7 +18,8 @@ data class UserPreferencesData(
     val weeklyReminderEnabled: Boolean = false,
     val syncEnabled: Boolean = true,
     val lastSyncTimestamp: Long = 0L,
-    val monthlyIncome: Double = 0.0
+    val monthlyIncome: Double = 0.0,
+    val monthlyIncomeUpdatedAt: Long = 0L
 )
 
 class UserPreferences(
@@ -36,6 +37,7 @@ class UserPreferences(
         const val SYNC_ENABLED = "sync_enabled"
         const val LAST_SYNC_TIMESTAMP = "last_sync_timestamp"
         const val MONTHLY_INCOME = "monthly_income"
+        const val MONTHLY_INCOME_UPDATED_AT = "monthly_income_updated_at"
     }
 
     private val _preferences = MutableStateFlow(readCurrentPreferences())
@@ -88,7 +90,8 @@ class UserPreferences(
             weeklyReminderEnabled = settings.getBoolean(Keys.WEEKLY_REMINDER_ENABLED, false),
             syncEnabled = settings.getBoolean(Keys.SYNC_ENABLED, true),
             lastSyncTimestamp = settings.getLong(Keys.LAST_SYNC_TIMESTAMP, 0L),
-            monthlyIncome = settings.getDouble(Keys.MONTHLY_INCOME, 0.0)
+            monthlyIncome = settings.getDouble(Keys.MONTHLY_INCOME, 0.0),
+            monthlyIncomeUpdatedAt = settings.getLong(Keys.MONTHLY_INCOME_UPDATED_AT, 0L)
         )
     }
 
@@ -152,8 +155,12 @@ class UserPreferences(
         updateState()
     }
 
-    suspend fun setMonthlyIncome(income: Double) {
+    suspend fun setMonthlyIncome(
+        income: Double,
+        updatedAt: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+    ) {
         settings[Keys.MONTHLY_INCOME] = income
+        settings[Keys.MONTHLY_INCOME_UPDATED_AT] = updatedAt
         updateState()
     }
 }

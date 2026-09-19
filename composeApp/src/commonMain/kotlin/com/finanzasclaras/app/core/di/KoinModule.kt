@@ -49,7 +49,7 @@ val appModule = module {
 
     // Firebase Auth & Sync
     single<AuthRepository> { FirebaseAuthRepository() }
-    single { FirebaseSyncManager(get(), get(), get(), get(), get()) }
+    single { FirebaseSyncManager(get(), get(), get(), get(), get(), get()) }
 
     // Repositories
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }

@@ -46,6 +46,7 @@ class DashboardViewModel constructor(
     init {
         loadData()
         sync()
+        syncManager.startPeriodicSync()
     }
 
     fun sync() {

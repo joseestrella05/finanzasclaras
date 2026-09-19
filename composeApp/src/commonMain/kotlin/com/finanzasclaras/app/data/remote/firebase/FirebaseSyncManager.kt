@@ -1,5 +1,6 @@
 package com.finanzasclaras.app.data.remote.firebase
 
+import com.finanzasclaras.app.core.local.UserPreferences
 import com.finanzasclaras.app.data.local.dao.CategoryBudgetDao
 import com.finanzasclaras.app.data.local.dao.InvestmentDao
 import com.finanzasclaras.app.data.local.dao.SavingContributionDao
@@ -13,19 +14,52 @@ import com.finanzasclaras.app.data.local.entity.TransactionEntity
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class UserProfileRemote(
+    val monthlyIncome: Double = 0.0,
+    val userName: String = "",
+    val baseCurrency: String = "DOP",
+    val updatedAt: Long = 0L
+)
 
 class FirebaseSyncManager(
     private val transactionDao: TransactionDao,
     private val savingGoalDao: SavingGoalDao,
     private val savingContributionDao: SavingContributionDao,
     private val investmentDao: InvestmentDao,
-    private val categoryBudgetDao: CategoryBudgetDao
+    private val categoryBudgetDao: CategoryBudgetDao,
+    private val userPreferences: UserPreferences
 ) {
     private val auth by lazy { Firebase.auth }
     private val firestore by lazy { Firebase.firestore }
+    private val syncScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var periodicSyncJob: Job? = null
 
     val userId: String?
         get() = try { auth.currentUser?.uid } catch (_: Exception) { null }
+
+    fun startPeriodicSync() {
+        if (periodicSyncJob?.isActive == true) return
+        periodicSyncJob = syncScope.launch {
+            while (isActive) {
+                delay(15_000L)
+                if (userId != null) {
+                    try {
+                        syncAll()
+                    } catch (_: Throwable) {}
+                }
+            }
+        }
+    }
 
     suspend fun syncAll(): SyncResult {
         val uid = userId
@@ -35,6 +69,7 @@ class FirebaseSyncManager(
         }
         println("[Firebase Sync] Starting sync for user: $uid")
         return try {
+            syncUserProfile(uid)
             syncTransactions(uid)
             syncSavingGoals(uid)
             syncSavingContributions(uid)
@@ -48,6 +83,48 @@ class FirebaseSyncManager(
         }
     }
 
+    private suspend fun syncUserProfile(uid: String) {
+        try {
+            val localPrefs = userPreferences.getPreferences()
+            val userDocRef = firestore.collection("users").document(uid)
+            val snapshot = userDocRef.get()
+
+            if (snapshot.exists) {
+                val remoteProfile = try { snapshot.data<UserProfileRemote>() } catch (_: Throwable) { null }
+                if (remoteProfile != null) {
+                    if (remoteProfile.updatedAt > localPrefs.monthlyIncomeUpdatedAt && remoteProfile.monthlyIncome > 0.0) {
+                        userPreferences.setMonthlyIncome(remoteProfile.monthlyIncome, remoteProfile.updatedAt)
+                    } else if (localPrefs.monthlyIncome > 0.0 && localPrefs.monthlyIncomeUpdatedAt > remoteProfile.updatedAt) {
+                        userDocRef.set(
+                            UserProfileRemote(
+                                monthlyIncome = localPrefs.monthlyIncome,
+                                userName = localPrefs.userName,
+                                baseCurrency = localPrefs.baseCurrency,
+                                updatedAt = localPrefs.monthlyIncomeUpdatedAt
+                            ),
+                            merge = true
+                        )
+                    }
+                    if (localPrefs.userName.isBlank() && remoteProfile.userName.isNotBlank()) {
+                        userPreferences.setUserName(remoteProfile.userName)
+                    }
+                }
+            } else {
+                if (localPrefs.monthlyIncome > 0.0 || localPrefs.userName.isNotBlank()) {
+                    userDocRef.set(
+                        UserProfileRemote(
+                            monthlyIncome = localPrefs.monthlyIncome,
+                            userName = localPrefs.userName,
+                            baseCurrency = localPrefs.baseCurrency,
+                            updatedAt = if (localPrefs.monthlyIncomeUpdatedAt > 0L) localPrefs.monthlyIncomeUpdatedAt else kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
+                        ),
+                        merge = true
+                    )
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
     private suspend fun syncTransactions(uid: String) {
         val unsynced = transactionDao.getUnsynced()
         println("[Firebase Sync] Found ${unsynced.size} unsynced local transactions")
@@ -55,7 +132,7 @@ class FirebaseSyncManager(
             try {
                 firestore.collection("users").document(uid)
                     .collection("transactions").document(tx.id)
-                    .set(tx, merge = true)
+                    .set(tx.copy(synced = true), merge = true)
                 transactionDao.markSynced(tx.id)
                 println("[Firebase Sync] Uploaded transaction ${tx.id}")
             } catch (e: Throwable) {
@@ -68,7 +145,7 @@ class FirebaseSyncManager(
                 .collection("transactions")
                 .get()
             val remoteTransactions = snapshot.documents.mapNotNull {
-                try { it.data<TransactionEntity>() } catch (e: Throwable) {
+                try { it.data<TransactionEntity>().copy(synced = true) } catch (e: Throwable) {
                     println("[Firebase Sync] Error deserializing transaction: ${e.message}")
                     null
                 }
@@ -88,7 +165,7 @@ class FirebaseSyncManager(
             try {
                 firestore.collection("users").document(uid)
                     .collection("saving_goals").document(goal.id)
-                    .set(goal, merge = true)
+                    .set(goal.copy(synced = true), merge = true)
                 savingGoalDao.markSynced(goal.id)
             } catch (_: Exception) {}
         }
@@ -98,7 +175,7 @@ class FirebaseSyncManager(
                 .collection("saving_goals")
                 .get()
             val remoteGoals = snapshot.documents.mapNotNull {
-                try { it.data<SavingGoalEntity>() } catch (_: Exception) { null }
+                try { it.data<SavingGoalEntity>().copy(synced = true) } catch (_: Exception) { null }
             }
             if (remoteGoals.isNotEmpty()) {
                 savingGoalDao.insertAll(remoteGoals)
@@ -112,7 +189,7 @@ class FirebaseSyncManager(
             try {
                 firestore.collection("users").document(uid)
                     .collection("saving_contributions").document(contribution.id)
-                    .set(contribution, merge = true)
+                    .set(contribution.copy(synced = true), merge = true)
                 savingContributionDao.markSynced(contribution.id)
             } catch (_: Exception) {}
         }
@@ -124,7 +201,7 @@ class FirebaseSyncManager(
             try {
                 firestore.collection("users").document(uid)
                     .collection("investments").document(inv.id)
-                    .set(inv, merge = true)
+                    .set(inv.copy(synced = true), merge = true)
                 investmentDao.markSynced(inv.id)
             } catch (_: Exception) {}
         }
@@ -134,7 +211,7 @@ class FirebaseSyncManager(
                 .collection("investments")
                 .get()
             val remoteInvestments = snapshot.documents.mapNotNull {
-                try { it.data<InvestmentEntity>() } catch (_: Exception) { null }
+                try { it.data<InvestmentEntity>().copy(synced = true) } catch (_: Exception) { null }
             }
             if (remoteInvestments.isNotEmpty()) {
                 investmentDao.insertAll(remoteInvestments)
@@ -148,7 +225,7 @@ class FirebaseSyncManager(
             try {
                 firestore.collection("users").document(uid)
                     .collection("category_budgets").document(budget.id)
-                    .set(budget, merge = true)
+                    .set(budget.copy(synced = true), merge = true)
                 categoryBudgetDao.markSynced(budget.id)
             } catch (_: Exception) {}
         }
@@ -158,7 +235,7 @@ class FirebaseSyncManager(
                 .collection("category_budgets")
                 .get()
             val remoteBudgets = snapshot.documents.mapNotNull {
-                try { it.data<CategoryBudgetEntity>() } catch (_: Exception) { null }
+                try { it.data<CategoryBudgetEntity>().copy(synced = true) } catch (_: Exception) { null }
             }
             val remoteIds = remoteBudgets.map { it.id }.toSet()
 
